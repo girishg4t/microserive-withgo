@@ -1,0 +1,19 @@
+# docker-compose.yml
+version: '3.5'
+
+services:
+  shippy-cli-consignment:
+    build: .
+    depends_on:
+      - datastore
+    environment:
+      DB_HOST: "mongodb://datastore:27017"
+
+  datastore:
+    image: mongo:latest
+    ports:
+      - 27017
+
+networks:
+  shippy-backend-tier:
+    name: shippy-backend-tier
