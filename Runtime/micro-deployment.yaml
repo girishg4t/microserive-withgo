@@ -1,0 +1,34 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+    name: micro
+spec:
+    replicas: 1
+    selector:
+        matchLabels:
+            app: micro
+    template:
+        metadata:
+            labels:
+                app: micro
+        spec:
+            containers:
+            - name: micro
+              image: microhq/micro:kubernetes
+              command: [
+                  "/micro",
+                  "api",
+                  "--handler=rpc"
+              ]
+              env:
+              - name: MICRO_API_ADDRESS
+                value: ":80"
+              - name: MICRO_ENABLE_STATS
+                value: "true"
+              - name: MICRO_API_NAMESPACE
+                value: "shippy"
+              - name: MICRO_SERVER_ADDRESS
+                value: ":8080"
+              ports:
+              - containerPort: 80
+                name: micro-port

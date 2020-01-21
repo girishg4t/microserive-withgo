@@ -1,0 +1,76 @@
+# docker-compose.yml
+version: '3'
+
+services:
+  shippy-service-consignment:
+    image: shippy-service-consignment:v2
+    restart: always # ensures the container will restart on crash
+    container_name: "shippy-service-consignment"
+    build: ../shippy-service-consignment
+    ports:
+      - 50051 # exposing this port on the docker network only, not host
+    depends_on:
+      - datastore
+      - shippy-service-vessel
+    network_mode: "host"
+    environment:      
+      DB_HOST: "mongodb://localhost:27017"
+      MICRO_ADDRESS: ":50051"
+      MICRO_REGISTRY: "mdns"
+  shippy-service-vessel:
+    image: shippy-service-vessel:v2
+    restart: always # ensures the container will restart on crash
+    container_name: "shippy-service-vessel"
+    build: ../shippy-service-vessel
+    ports:
+      - 50052:50051 # exposing this port on the docker network only, not host
+    depends_on:
+      - datastore
+    network_mode: "host"
+    environment:
+      DB_HOST: "mongodb://localhost:27017"
+      MICRO_ADDRESS: ":50051"
+  shippy-server:
+    image: shippy-server:v2
+    restart: always # ensures the container will restart on crash
+    container_name: "shippy-server"
+    build: ../shippy-server
+    depends_on:
+      - shippy-service-consignment
+      - shippy-service-vessel
+    network_mode: "host"
+  micro:
+    image: microhq/micro
+    command: api --enable_rpc
+    ports:
+      - 8080:8080
+    environment:
+      - MICRO_REGISTRY=mdns
+    depends_on:
+      - shippy-service-consignment
+      - shippy-service-vessel
+      - shippy-server
+  shippy-ui:
+    image: shippy-ui:v2
+    restart: always # ensures the container will restart on crash
+    container_name: "shippy-ui"
+    build: ../shippy-ui
+    depends_on:
+      - micro
+    ports:
+      - 8000:8000
+    network_mode: "host"
+  datastore:
+    image: mongo
+    container_name: "datastore"
+    environment:
+      - MONGO_DATA_DIR=/data/db
+      - MONGO_LOG_DIR=/dev/null
+    volumes:
+      - ./data/db:/data/db # ensures data persistence between restarting
+    network_mode: "host"
+    ports:
+      - 27017
+    command: mongod --logpath=/dev/null
+
+    #docker run -p 8080:8080 -e MICRO_REGISTRY=mdns microhq/micro api --enable_rpc

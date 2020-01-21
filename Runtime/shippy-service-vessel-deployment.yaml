@@ -1,0 +1,32 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: kompose convert
+    kompose.version: 1.16.0 (0c01309)
+  creationTimestamp: null
+  labels:
+    io.kompose.service: shippy-service-vessel
+  name: shippy-service-vessel
+spec:
+  replicas: 1
+  strategy: {}
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        io.kompose.service: shippy-service-vessel
+    spec:
+      containers:
+      - env:
+        - name: DB_HOST
+          value: "mongodb://datastore:27017"
+        - name: MICRO_ADDRESS
+          value: :50051
+        image: shippy-service-vessel:v2
+        name: shippy-service-vessel
+        ports:
+        - containerPort: 50051
+        resources: {}
+      restartPolicy: Always
+status: {}

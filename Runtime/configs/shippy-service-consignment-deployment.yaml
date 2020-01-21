@@ -1,0 +1,35 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  annotations:
+    kompose.cmd: kompose convert -o configs/
+    kompose.version: 1.16.0 (0c01309)
+  creationTimestamp: null
+  labels:
+    io.kompose.service: shippy-service-consignment
+  name: shippy-service-consignment
+spec:
+  replicas: 1
+  strategy: {}
+  template:
+    metadata:
+      creationTimestamp: null
+      labels:
+        io.kompose.service: shippy-service-consignment
+    spec:
+      containers:
+      - env:
+        - name: DB_HOST
+          value: mongodb://localhost:27017
+        - name: MICRO_ADDRESS
+          value: :50051
+        - name: MICRO_REGISTRY
+          value: mdns
+        image: shippy-service-consignment:v2
+        imagePullPolicy: Never
+        name: shippy-service-consignment
+        ports:
+        - containerPort: 50051
+        resources: {}
+      restartPolicy: Always
+status: {}
